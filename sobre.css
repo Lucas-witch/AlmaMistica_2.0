@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+body {
+    background-image: url('img/fundo.jpeg');
+    background-size: cover;
+    color: #fff;
+    font-family: 'VT323', monospace;
+    margin: 0;
+    padding: 0;
+}
+
+.sobre-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: rgba(0,0,0,0.8);
+    border-radius: 16px;
+    box-shadow: 0 0 18px #A866BE;
+    padding: 32px 28px;
+    border: 3px double #794CA9;
+    text-align: center;
+}
+
+#sobre_title {
+    font-size: 32px;
+    color: #32c8e6;
+    text-shadow: 2.5px 2.5px #dbf55d;
+    font-family: 'Press Start 2P', monospace;
+    margin-bottom: 18px;
+}
+
+.caixa-sobre {
+    background: #b2f4e5;
+    border-radius: 10px;
+    padding: 22px;
+    margin-bottom: 18px;
+    border: 2px solid #9861D4;
+    box-shadow: 0 0 10px #9D97CD;
+}
+
+.text-sobre {
+    font-size: 20px;
+    color: #794CA9;
+    font-family: 'VT323', monospace;
+    line-height: 1.7;
+}
+
+.botao-voltar {
+    display: inline-block;
+    background: #ff00dd;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 7px;
+    font-family: 'Press Start 2P', monospace;
+    text-decoration: none;
+    margin-top: 10px;
+    box-shadow: 0 0 8px #ff00dd66;
+    transition: background 0.3s;
+}
+
+.botao-voltar:hover {
+    background: #794CA9;
+    color: #fff;
+}

@@ -1,0 +1,185 @@
+/* ÍNDICE DE SEÇÕES - arquivo: perfil.css 
+1 - Variáveis de cores
+2 - Reset/Tipografia
+3 - Layout/Containers
+4 - Botões/Componentes
+5 - Footer e responsividade */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+body {
+    background-image: url('img/fundo.jpeg');
+    background-size: cover;
+    color: #fff;
+    font-family: 'VT323', monospace;
+    margin: 0;
+    padding: 0;
+}
+
+#titulo {
+    font-size: 30px;
+    color: #f37bdf;
+    font-family: 'Press Start 2P', monospace;
+    text-align: center;
+    margin: 30px 0 20px 0;
+    text-shadow: 2px 2px #491058;
+}
+
+.perfil-container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: rgba(0,0,0,0.8);
+    border-radius: 16px;
+    box-shadow: 0 0 18px #A866BE;
+    padding: 30px 24px;
+    border: 2px double #794CA9;
+    text-align: center;
+}
+
+
+
+.perfil-container {
+    font-size: 20px;
+    color: #d224fe;
+    font-family: 'Press Start 2P', monospace;
+    margin-bottom: 18px;
+}
+
+.perfil-box {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.perfil-foto {
+    flex: 0 0 120px;
+    text-align: center;
+}
+
+#foto-perfil {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #ff00dd;
+    box-shadow: 0 0 12px #ff00dd99;
+    background: #fff;
+}
+
+.botao-foto {
+    display: inline-block;
+    margin-top: 10px;
+    background: #794CA9;
+    color: #fff;
+    padding: 4.5px;
+    border-radius: 6px;
+    font-family: 'Press Start 2P', monospace;
+    cursor: pointer;
+    transition: background 0.3s;
+    box-shadow: 0 0 6px #ff00dd66;
+    font-size: 15px;
+}
+
+.botao-foto:hover {
+    background: #ff00dd;
+    color: #fff;
+}
+
+.perfil-dados {
+    text-align: left;
+    font-size: 18px;
+    color: #fff;
+    font-family: 'VT323', monospace;
+}
+
+.form-senha {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-senha label {
+    font-size: 15px;
+    color: #ff00dd;
+    font-family: 'Press Start 2P', monospace;
+}
+
+.form-senha input {
+    padding: 6px;
+    border-radius: 5px;
+    border: 2px solid #794CA9;
+    font-size: 16px;
+    font-family: 'VT323', monospace;
+    background: #f1b0fe22;
+    color: #794CA9;
+}
+
+.botao-senha {
+    background: #794CA9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 4.5px 0;
+    font-size: 15px;
+    font-family: 'Press Start 2P', monospace;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 2px;
+}
+
+.botao-senha:hover {
+    background: #ff00dd;
+    color: #fff;
+}
+
+.perfil-info {
+    margin: 18px 0 10px 0;
+    font-size: 16px;
+    color: #b2f4e5;
+    font-family: 'VT323', monospace;
+}
+
+.botao-voltar {
+    display: inline-block;
+    background: #ff00dd;
+    color: #fff;
+    padding: 10px;
+    border-radius: 7px;
+    font-family: 'Press Start 2P', monospace;
+    text-align: center;
+    text-decoration: none;
+    margin-top: 10px;
+    box-shadow: 0 0 8px #ff00dd66;
+    transition: background 0.3s;
+    width: 150px;
+    font-size: 12px;
+}
+
+.botao-voltar:hover {
+    background: #794CA9;
+    color: #fff;
+}
+
+/* Ícones sociais do rodapé */
+.footer-redes {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 8px;
+}
+
+.icone-social svg {
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    transition: transform 0.2s;
+}
+
+.icone-social:hover svg {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
+}

@@ -1,0 +1,213 @@
+/* ÍNDICE DE SEÇÕES - arquivo: editor-post.css
+1 - Reset / Tipografia
+2 - Layout do editor
+3 - Barra de ferramentas (toolbar)
+4 - Preview
+5 - Paletas / elementos flutuantes
+6 - Responsividade
+*/
+
+/* 1 - Tipografia */
+:root{
+    --cor-primaria: #5e2d89;
+    --bg: #fff;
+    --btn-active: #ff7ad9;
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: 'VT323', monospace;
+    background: #e89cff;
+    color: #111;
+}
+
+/* 2 - Layout do editor */
+.editor-page {
+    max-width: 980px;
+    margin: 26px auto;
+    padding: 18px;
+}
+.titulo-pagina {
+    font-size: 28px;
+    margin-bottom: 12px;
+    font-family: 'Minecraft', monospace;
+}
+
+.campo-basico {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+}
+.campo-basico label {
+    display:block;
+    font-size:14px;
+    margin-bottom:4px;
+    font-weight:700;
+}
+.campo-basico input[type="text"], .campo-basico select {
+    padding:8px 10px;
+    border-radius:6px;
+    border:1px solid #ddd;
+    min-width:220px;
+    font-family: inherit; font-size:14px;
+}
+.seletor-titulo {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:6px;
+}
+
+/* 3 - Barra de ferramentas (toolbar) */
+.editor-section { margin-bottom:16px; }
+
+.editor-toolbar {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:10px;
+    border-radius:8px;
+    background:linear-gradient(90deg,#fff,#fbf7ff);
+    border:1px solid #eee;
+    margin-bottom:8px;
+    align-items:center;
+}
+
+.tool-btn {
+    background: transparent;
+    border:1px solid rgba(0,0,0,0.06);
+    padding:6px 8px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size: 14px;
+    transition: all .15s;
+}
+
+.tool-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.tool-btn.ativo {
+    background: var(--btn-active);
+    color: #fff;
+    border-color: rgba(0,0,0,0.08);
+}
+
+/* Espaços pequenos (tamanho) */
+.mini { font-size:13px; padding:6px; }
+
+/* Editor contenteditable area */
+.editor-content {
+    min-height: 260px;
+    padding:16px;
+    border-radius:10px;
+    border:1px dashed #e6e6f0;
+    background: #fff0f8;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+    overflow:auto;
+}
+
+.editor-content:focus {
+    outline: none;
+    box-shadow: 0 2px 14px rgba(94,45,137,0.06);
+}
+
+/* 4 - Preview */
+.preview-section { margin-top: 18px; }
+#preview-wrapper { margin-top:8px; background-color: aliceblue; padding:10px; border-radius:8px; }
+
+.post-preview {
+    border-radius: 10px; padding: 14px; background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,246,255,0.9));
+    border: 1px solid #eee;
+}
+
+.post-title {
+    margin: 0 0 8px 0;
+    font-family: 'Minecraft', monospace;
+    font-size:22px;
+}
+
+.post-conteudo {
+    font-family: 'VT323', monospace;
+    font-size:16px;
+    color:#222;
+}
+.post-conteudo mark {
+    background: #fff59d;
+    padding: 2px 4px;
+    border-radius:3px;
+}
+
+/* 5 - Paletas / elementos flutuantes */
+.color-palette {
+    position: absolute;
+    z-index: 9999;
+    background: #fff;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border:1px solid #efe9f6;
+}
+.color-palette button {
+    padding:6px 8px;
+    border-radius:6px;
+    border:1px solid #ddd;
+    background:#fff;
+    cursor:pointer;
+}
+.color-palette input[type="color"] {
+    width:36px;
+    height:28px;
+    padding:0;
+    border:none;
+    background:transparent;
+}
+
+/* Link modal (simples) */
+.link-modal {
+    position: fixed;
+    left: 0; top: 0; right: 0; bottom: 0;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(0,0,0,0.35);
+    z-index: 10000;
+}
+.link-modal[hidden] { display:none; }
+.link-modal-inner {
+    background:#fff; padding:16px; border-radius:10px; width:90%; max-width:520px;
+}
+
+/* 6 - Ações do form */
+.form-submit {
+    margin-top:14px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+.botao-publicar {
+    padding:10px 16px;
+    background: var(--cor-primaria);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+.botao-cancel {
+    text-decoration:none;
+    color:#666;
+    padding:8px 10px;
+    background:transparent;
+    border-radius:8px;
+    border:1px solid transparent;
+}
+
+/* 7 - Responsividade */
+@media (max-width:720px) {
+    .campo-basico { flex-direction:column; }
+    .editor-toolbar { gap:6px; }
+}

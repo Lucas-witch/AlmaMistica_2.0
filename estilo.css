@@ -1,0 +1,439 @@
+/* ÍNDICE DE SEÇÕES - arquivo: estilo.css 
+1 - Variáveis de cores
+2 - Reset/Tipografia
+3 - Layout/Containers
+4 - Botões/Componentes
+5 - Footer e responsividade */
+
+/* Importando as fontes pixeladas */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); /* Para títulos */
+@import url('https://fonts.googleapis.com/css2?family=Minecraft&display=swap'); /* Para subtítulos */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap'); /* Para o corpo do texto */
+
+/* Cor do corpo do site */
+body {
+    background-image: url('img/fundo-login.jpeg');
+    background-size: cover;
+    color: #fff;
+    font-family: 'VT323', monospace; /* Fonte pixelada para corpo de texto */
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Caixa central principal */
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border: 4px double #C3ACEA;
+    box-shadow: 0 0 15px #A866BE;
+}
+
+/* Cabeçalho - Título principal */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 40px;
+    color: #dd87eb; /* amethyst */
+    text-shadow: 2.5px 2px #320577; /* amethyst-2 */
+    font-family: 'Press Start 2P', monospace; /* Fonte pixelada para títulos */
+}
+
+/* Estilo para os quadros de conteúdo */
+.quadro {
+    background: rgba(121, 12, 136, 0.705);
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #794CA9; /* royal-purple */
+    border-radius: 10px;
+    box-shadow: 0 0 10px #9D97CD; /* cool-gray */
+    transition: transform 0.3s ease;
+}
+
+/* Título dos quadros - Fonte pixelada */
+.quadro h2 {
+    font-size: 22px;
+    color: #f1b0fe; /* amethyst */
+    text-shadow: 1px 1px #85A0EA; /* vista-blue */
+    border-bottom: 1px dashed #755ECE; /* slate-blue */
+    margin-bottom: 15px;
+    font-family: 'Minecraft', monospace; /* Fonte pixelada para subtítulos */
+}
+
+.input-pesquisa {
+    background-color: #f496d5;
+    box-shadow: #d21fffa1;
+    border-radius: 10px;
+    padding: 3px;
+    width: 200px;
+    color: black;
+}
+r
+.input-pesquisa:hover {
+    transition: 0.8s;
+    background-color: #92e8fbd3;
+    color: black;
+}
+
+.pesquisar {
+    box-shadow: #d21fffa1;
+    border-radius: 100%;
+    background-color: #b2f4e5;
+}
+
+.botao-pesquisa {
+    box-shadow: #6fa5f6 2px 0px 2px 0px;
+    border-radius: 100%;
+    background-color: #b2f4e5;
+}
+
+/* Estilo do caderno de visitas */
+.caderno-visitas {
+    background: #c9ffd8; /* vista-blue */
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    color: black;
+    text-align: center;
+}
+
+.caderno-visitas h3 {
+    color: #794CA9; /* royal-purple */
+    font-size: 18px;
+    font-family: 'Press Start 2P', monospace; /* Fonte pixelada para o caderno de visitas */
+}
+
+.caderno-visitas {
+    padding: 6px;
+    border: 2px solid #794CA9; /* royal-purple */
+    background-color: #b2f4e5; /* verde água claro */
+    width: 95%;
+    margin-top: 8px;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    box-shadow: #85A0EA 0px 0px 8px;
+}
+
+.caderno-visitas button {
+    margin-top: 10px;
+    border: none;
+    background: none;
+}
+
+/* Estilo para as postagens */
+.blog h2 {
+    color: #ff00dd; /* amethyst */
+    text-shadow: 1px 1px #ff7ff0; /* tropical-indigo */
+    border-bottom: 1px dashed #fff;
+    margin-bottom: 15px;
+    font-family: 'Press Start 2P', monospace; /* Fonte pixelada para postagens */
+}
+
+.post {
+    background: #794CA9; /* royal-purple */
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #9861D4; /* amethyst */
+    border-radius: 5px;
+}
+
+.post {
+    color: #fff;
+    font-size: 14px;
+    font-family: 'Press Start 2P', monospace; /* Fonte pixelada para títulos das postagens */
+}
+
+.post p {
+    color: #fff; /* texto branco para melhor contraste no fundo roxo */
+    font-family: 'VT323', monospace; /* Fonte pixelada para corpo das postagens */
+}
+
+
+/* Layout em 3 colunas */
+.layout-3-colunas {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 20px;
+}
+
+.layout-3-colunas > div {
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+}
+
+.layout-3-colunas img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* Links do índice do blog */
+.quadro ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.quadro ul li a {
+    text-decoration: none;
+    color: #ff6ec7; /* rosa barbie com glitter emocional */
+    font-family: 'Minecraft', monospace;
+    font-size: 16px;
+    display: inline-block;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    width: 250px;
+}
+
+.quadro ul li a:hover {
+    color: #ffd700; /* dourado purpurinado */
+    text-shadow: 1px 1px 4px #ffffff;
+    transform: scale(1.1);
+}
+
+/* Título das postagens como links (caso use <h3><a href="">Título</a></h3>) */
+.post h3 a {
+    text-decoration: none;
+    color: #00e0ff; /* azul neon estilo cyber gay 2003 */
+    font-family: 'Press Start 2P', monospace;
+    transition: all 0.3s ease;
+}
+
+.post h3 a:hover {
+    color: #ff00dd; /* roxo chique da discoteca */
+    text-shadow: 0 0 5px #ffffff;
+    transform: scale(1.05);
+}
+
+.botao {
+    background-color: #ff00dd;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+    font-family: 'Press Start 2P', monospace; /* Fonte pixelada para botões */
+}
+
+.botao-login {
+    background-color: #794CA9; /* roxo escuro */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-family: 'Press Start 2P', monospace;
+    transition: background-color 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.botao-login:hover {
+    background-color: #16eff3; /* verde água claro */
+    color: #794CA9;
+}
+
+.botao-cadastro {
+    background-color: #ff00dd; /* rosa neon */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-family: 'Press Start 2P', monospace;
+    transition: background-color 0.3s ease;
+}
+
+.botao-cadastro:hover {
+    background-color: #ffd700; /* dourado */
+    color: #ff00dd;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 2px solid #9861D4; /* amethyst */
+    margin-top: 20px;
+    font-family: 'VT323', monospace; /* Fonte pixelada para o rodapé */
+}
+
+/* Bate-papo lateral menor */
+.footer-redes, .redes-sociais {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+.icone-social svg {
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    transition: transform 0.2s;
+}
+
+.icone-social:hover svg {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
+}
+.icon-externo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    object-fit: cover;
+    transition: transform 0.2s;
+    display: block;
+}
+
+.icone-social:hover .icon-externo {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
+}
+.quadro-batepapo-lateral {
+    background: #e0faff;
+    border: 2px solid #794CA9;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #ff00dd44;
+    padding: 10px 12px;
+    margin-top: 18px;
+    font-family: 'VT323', monospace;
+    color: #794CA9;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.quadro-batepapo-lateral h3 {
+    color: #794CA9;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.comentarios-lista-lateral {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px;
+}
+
+.comentario-item-lateral {
+    margin-bottom: 7px;
+    padding: 5px 7px;
+    background: #f1b0fe22;
+    border-radius: 5px;
+    font-size: 15px;
+    box-shadow: 0 0 2px #ff00dd33;
+}
+
+.comentario-nome-lateral {
+    color: #ff00dd;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+}
+
+.comentario-data-lateral {
+    color: #755ECE;
+    font-size: 12px;
+    font-family: 'Minecraft', monospace;
+}
+
+.comentario-msg-lateral {
+    color: #794CA9;
+    font-size: 15px;
+    font-family: 'VT323', monospace;
+}
+
+.comentario-vazio-lateral {
+    color: #794CA9;
+    font-family: 'VT323', monospace;
+    text-align: center;
+    margin: 6px 0;
+}
+
+.comentario-form-lateral {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.comentario-input-lateral {
+    padding: 5px;
+    border: 2px solid #794CA9;
+    border-radius: 5px;
+    font-family: 'VT323', monospace;
+    background: #b2f4e5;
+    font-size: 14px;
+}
+
+.comentario-textarea-lateral {
+    padding: 5px;
+    border: 2px solid #ff00dd;
+    border-radius: 5px;
+    font-family: 'VT323', monospace;
+    background: #f1b0fe22;
+    font-size: 14px;
+    min-height: 30px;
+    resize: vertical;
+}
+
+.botao-comentario-lateral {
+    background-color: #794CA9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 7px 0;
+    font-size: 15px;
+    font-family: 'Press Start 2P', monospace;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.botao-comentario-lateral:hover {
+    background-color: #ff00dd;
+    color: #fff;
+}
+
+.logo-circular {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 12px #ff00dd99;
+    background: #fff;
+    margin-right: 18px;
+    vertical-align: middle;
+        }
+.logo-centro {
+    display: block;
+    margin: 0 auto 12px auto;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.nav-logo-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
