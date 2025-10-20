@@ -35,15 +35,11 @@ body {
     padding: 30px 24px;
     border: 2px double #794CA9;
     text-align: center;
-}
-
-
-
-.perfil-container {
     font-size: 20px;
     color: #d224fe;
     font-family: 'Press Start 2P', monospace;
     margin-bottom: 18px;
+
 }
 
 .perfil-box {
@@ -57,6 +53,7 @@ body {
 .perfil-foto {
     flex: 0 0 120px;
     text-align: center;
+    gap: 40px;
 }
 
 #foto-perfil {
@@ -183,3 +180,4 @@ body {
     transform: scale(1.12);
     box-shadow: 0 0 16px #ff00ddcc;
 }
+

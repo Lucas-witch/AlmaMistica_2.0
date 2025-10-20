@@ -1,46 +1,43 @@
 <?php
-/* ÍNDICE: 1-Início 2-Conexão/Session 3-Lógica Principal 4-Formulários/Ações 5-Rodapé */
-session_start();
-include 'conexao.php';
+// post.php (modificado: usa has_role para identificar admin/editor)
+require_once 'conexao.php';
+require_once 'auth.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-
 // Captura o ID do post pela URL
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
 if ($id <= 0) {
     die("Post inválido.");
 }
 
-// Busca os dados do post
-$stmt = $conn->prepare("SELECT * FROM posts WHERE id = ?");
+// busca o post no banco
+$stmt = $conn->prepare("SELECT id, titulo, conteudo, autor, tema, data, imagem_url, estilo_post FROM posts WHERE id = ? LIMIT 1");
 $stmt->bind_param("i", $id);
 $stmt->execute();
-$result = $stmt->get_result();
-$post = $result->fetch_assoc();
-$stmt->close();
-
+$res = $stmt->get_result();
+$post = $res->fetch_assoc();
 if (!$post) {
     die("Post não encontrado.");
 }
 
-// Identificação do administrador
-// >>>> SUBSTITUA "admin@exemplo.com" PELO SEU E-MAIL OU USUÁRIO DE ADMINISTRADOR <<<<
-$adminUsers = [
-    'emails'     => ['leo2008@gmail.com'],
-    'usernames'  => ['eu-sou-gay589'],
-];
-
-// Se você já tem uma sessão de login com $_SESSION["email"] ou $_SESSION["usuario"],
-// descomente a linha correta abaixo para checar se é o admin:
-$isAdmin =
-    (isset($_SESSION['email'])   && in_array($_SESSION['email'],   $adminUsers['emails'], true)) ||
-    (isset($_SESSION['usuario']) && in_array($_SESSION['usuario'], $adminUsers['usernames'], true));
+// Identificação do administrador/ediTOR pela sessão (mais confiável)
+$isAdmin = has_role(['admin']);
+$isEditor = has_role(['editor', 'admin']); // editores também podem editar
 
 ?>
+<!-- A partir daqui continua seu HTML de exibição do post.
+Use as flags $isAdmin / $isEditor para exibir botões de edição/exclusão:
+<?php if ($isEditor): ?>
+  <!-- botão editar -->
+<?php endif; ?>
+<?php if ($isAdmin): ?>
+  <!-- botão excluir -->
+<?php endif; ?>
+-->
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -71,7 +68,7 @@ $isAdmin =
     <link rel="shortcut icon" href="img/logo-nova.png" type="image/png">
 </head>
     <body>
-
+    <div class="post">
     <div class="post-container">
         <h1 id="title"><?= htmlspecialchars($post['titulo']) ?></h1>
 
@@ -88,7 +85,8 @@ $isAdmin =
             <a href="index.php" class="botao-voltar">Voltar</a>
         </div>    
     </div>
-        
+</div>
+       
 
     <footer>
         <div class="footer-redes">

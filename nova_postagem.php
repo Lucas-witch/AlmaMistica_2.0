@@ -1,16 +1,15 @@
 <?php
-// nova_postagem.php
-// Processa o form de nova postagem, salva no banco e arquivos em posts/, e redireciona para index.php
+// nova_postagem.php (modificado para checar role)
+require_once 'auth.php';
+require_role('admin'); // somente admin pode criar postagem (ou mude para has_role(['admin','editor']))
 
-// IMPORTANTE: conexao.php precisa definir $conn (mysqli) e NÃO enviar nenhum output.
+// exige conexao
 require_once 'conexao.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    // Acesso direto: volta ao index
     header('Location: index.php');
     exit;
 }
-
 // Faz sanitize básico das entradas
 $titulo      = trim($_POST['titulo'] ?? '');
 $conteudo    = trim($_POST['conteudo'] ?? '');

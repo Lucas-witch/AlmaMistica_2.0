@@ -143,6 +143,7 @@ if ($result && $result->num_rows > 0) {
                         echo '<p class="comentario-vazio-lateral">Seja o primeiro a comentar!</p>';
                     }
                     ?>
+                    
                 </div>
                 <form class="comentario-form-lateral" method="post" action="comentario.php">
                     <textarea name="mensagem" placeholder="Mensagem..." maxlength="100" required class="comentario-textarea-lateral"></textarea>

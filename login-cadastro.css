@@ -70,7 +70,63 @@ h2 {
     background-color: #FDB7EA;
 }
 
-a {
+.botao-google, .botao-conta, .botao-esquecer {
     color: #91c1e1; /* amethyst */
     text-decoration: none;
+    text-align: center;
+}
+
+.botao-esquecer {
+    margin-bottom: 12px;
+    color: #ff94d6; /* amethyst */
+}
+
+#cadastre, .botao-conta {
+    color: #c1b0fe; /* amethyst */
+    text-decoration: none;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 2px solid #9861D4; /* amethyst */
+    margin-top: 20px;
+    font-family: 'VT323', monospace; /* Fonte pixelada para o rodapé */
+}
+
+/* Bate-papo lateral menor */
+.footer-redes, .redes-sociais {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+.icone-social svg {
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    transition: transform 0.2s;
+}
+
+.icone-social:hover svg {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
+}
+.icon-externo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    object-fit: cover;
+    transition: transform 0.2s;
+    display: block;
+}
+
+.icone-social:hover .icon-externo {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
 }

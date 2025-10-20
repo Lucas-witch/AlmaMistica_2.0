@@ -1,28 +1,18 @@
 <?php
-/* editor-post.php
-   ÍNDICE:
-   1 - Sessão e verificação admin
-   2 - Carrega posts para link interno
-   3 - Formulário do editor (WYSIWYG)
-*/
-session_start();
-include 'conexao.php';
-
-// Verificação admin
-$is_admin = false;
-if (isset($_SESSION['usuario']) && isset($_SESSION['email'])) {
-    $admin_users = [
-        'admin_teste' => 'admin@exemplo.com',
-        'dev_Lucas369' => 'lucasbarros31102008@gmail.com',
-        'eu-sou-gay589' => 'leo2008@gmail.com',
-    ];
-    foreach ($admin_users as $u => $e) {
-        if ($_SESSION['usuario'] === $u && $_SESSION['email'] === $e) { $is_admin = true; break; }
-    }
+// editor-post.php (modificado para usar auth.php)
+require_once 'auth.php'; // garante sessão e funções de role-check
+// exige que usuário seja admin ou editor para acessar o editor
+if (!has_role(['admin', 'editor'])) {
+    http_response_code(403);
+    echo '<div style="color:red;text-align:center;">Acesso negado. Você precisa ser administrador ou editor.</div>';
+    exit;
 }
-if (!$is_admin) die("Acesso negado.");
 
-// Carrega posts para o modal de inserir link interno
+// resto do código do editor continua...
+// (a partir daqui, mantenha o seu código existente que renderiza o editor)
+
+
+ //Carrega posts para o modal de inserir link interno
 $posts_for_links = [];
 $sql = "SELECT id, titulo FROM posts ORDER BY data DESC LIMIT 200";
 if ($res = $conn->query($sql)) {

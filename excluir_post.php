@@ -1,14 +1,11 @@
 <?php
-session_start();
-$adminUsers = [
-    'dev_Lucas369' => 'lucasbarros31102008@gmail.com',
-    'eu-sou-gay589' => 'leo2008@gmail.com'
-];
+// excluir_post.php (modificado para usar auth.php)
 
-if (!isset($_SESSION['usuario']) || !isset($_SESSION['email']) ||
-    !array_key_exists($_SESSION['usuario'], $adminUsers) ||
-    $adminUsers[$_SESSION['usuario']] !== $_SESSION['email']) {
-    echo '<div style="color:red;text-align:center;">Acesso negado.</div>';
+require_once 'auth.php';
+require_role('admin'); // somente admin pode excluir posts
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo '<div style="color:red;text-align:center;">Requisição inválida.</div>';
     exit;
 }
 
@@ -17,14 +14,18 @@ if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
     exit;
 }
 $id = intval($_POST['id']);
-$conn = new mysqli('localhost', 'root', '', 'alma_db');
+
+require_once 'conexao.php'; // abre $conn (mysqli)
 if ($conn->connect_error) {
     die('<div style="color:red;text-align:center;">Erro ao conectar ao banco.</div>');
 }
+
 $stmt = $conn->prepare("DELETE FROM posts WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $stmt->close();
 $conn->close();
+
 header("Location: index.php");
 exit;
+?>
