@@ -1,7 +1,7 @@
 <?php
-// alterar_senha.php
+// alterar-senha.php
 session_start();
-require_once 'conexao.php';
+require_once 'conexao.php'; // $conn (mysqli)
 
 if (empty($_SESSION['usuario'])) {
     header('Location: login.php');
@@ -34,6 +34,10 @@ if (strlen($senha_nova) < 6) {
 
 // busca hash atual do banco
 $stmt = $conn->prepare("SELECT senha FROM usuarios WHERE nome = ? LIMIT 1");
+if (!$stmt) {
+    header('Location: perfil.php?msg=' . urlencode('Erro interno (prepare).'));
+    exit;
+}
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
 $stmt->store_result();
@@ -55,6 +59,10 @@ if (!password_verify($senha_atual, $senha_hash_db)) {
 // atualiza com novo hash
 $novo_hash = password_hash($senha_nova, PASSWORD_DEFAULT);
 $upd = $conn->prepare("UPDATE usuarios SET senha = ? WHERE nome = ?");
+if (!$upd) {
+    header('Location: perfil.php?msg=' . urlencode('Erro interno (prepare update).'));
+    exit;
+}
 $upd->bind_param("ss", $novo_hash, $usuario);
 if ($upd->execute()) {
     $upd->close();

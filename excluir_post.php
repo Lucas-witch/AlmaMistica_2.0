@@ -1,31 +1,32 @@
 <?php
-// excluir_post.php (modificado para usar auth.php)
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/conexao.php';
 
-require_once 'auth.php';
-require_role('admin'); // somente admin pode excluir posts
+if (!has_role(['admin','editor'])) {
+    http_response_code(403);
+    die('Acesso negado.');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo '<div style="color:red;text-align:center;">Requisição inválida.</div>';
-    exit;
+    die('Requisição inválida');
 }
 
-if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
-    echo '<div style="color:red;text-align:center;">ID inválido.</div>';
-    exit;
-}
-$id = intval($_POST['id']);
-
-require_once 'conexao.php'; // abre $conn (mysqli)
-if ($conn->connect_error) {
-    die('<div style="color:red;text-align:center;">Erro ao conectar ao banco.</div>');
+$id = intval($_POST['id'] ?? 0);
+if ($id <= 0) {
+    die('ID inválido');
 }
 
 $stmt = $conn->prepare("DELETE FROM posts WHERE id = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
+if (!$stmt) {
+    die('Erro prepare: ' . $conn->error);
+}
+$stmt->bind_param('i', $id);
+$ok = $stmt->execute();
+if (!$ok) {
+    die('Erro ao excluir: ' . $stmt->error);
+}
 $stmt->close();
 $conn->close();
 
-header("Location: index.php");
+header('Location: index.php?excluido=1');
 exit;
-?>

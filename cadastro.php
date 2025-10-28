@@ -1,22 +1,48 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (!empty($_POST["nome"]) && !empty($_POST["senha"]) && !empty($_POST["email"])) {
-        $nome = trim($_POST["nome"]);
-        $senha = password_hash(trim($_POST["senha"]), PASSWORD_DEFAULT);
-        $email = trim($_POST["email"]);
-        $foto = 'img/icon_perfil.png';
+session_start();
+require_once 'conexao.php'; // $conn
 
-        $conn = new mysqli("localhost", "root", "", "alma_db");
-        if (!$conn->connect_error) {
-            $stmt = $conn->prepare("INSERT INTO usuarios (nome, email, senha, FotoPerfil) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $nome, $email, $senha, $foto);
-            if ($stmt->execute()) {
-                session_start();
-                $_SESSION['usuario'] = $nome;
-                $_SESSION['foto'] = $foto;
-                $_SESSION['email'] = $email;
-                header("Location: perfil.php");
-                exit;
+$erro = '';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $nome = trim($_POST['nome'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $senha_raw = trim($_POST['senha'] ?? '');
+
+    if ($nome === '' || $email === '' || $senha_raw === '') {
+        $erro = "Preencha todos os campos.";
+    } else {
+        // verifica duplicatas
+        $check = $conn->prepare("SELECT id FROM usuarios WHERE nome = ? OR email = ? LIMIT 1");
+        $check->bind_param("ss", $nome, $email);
+        $check->execute();
+        $check->store_result();
+        if ($check->num_rows > 0) {
+            $erro = "Nome de usuário ou email já existe.";
+            $check->close();
+        } else {
+            $check->close();
+            $senha_hash = password_hash($senha_raw, PASSWORD_DEFAULT);
+            $foto = 'img/icon_perfil.png';
+            $role = 'user';
+            $stmt = $conn->prepare("INSERT INTO usuarios (nome, email, senha, FotoPerfil, role) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("sssss", $nome, $email, $senha_hash, $foto, $role);
+                if ($stmt->execute()) {
+                    $new_id = $conn->insert_id;
+                    $_SESSION['id'] = (int)$new_id;
+                    $_SESSION['usuario'] = $nome;
+                    $_SESSION['email'] = $email;
+                    $_SESSION['foto'] = $foto;
+                    $_SESSION['role'] = $role;
+                    header("Location: perfil.php");
+                    exit;
+                } else {
+                    $erro = "Erro ao cadastrar.";
+                }
+                $stmt->close();
+            } else {
+                $erro = "Erro interno (DB).";
             }
         }
     }
@@ -24,32 +50,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cadastro</title>
-    <link rel="stylesheet" href="login-cadastro.css">
-</head>
+<head><meta charset="utf-8"><title>Cadastro</title><link rel="stylesheet" href="login-cadastro.css"></head>
 <body>
 <div class="form-container">
     <h2>Crie sua conta</h2>
+    <?php if (!empty($erro)): ?><p style="color:red;text-align:center;"><?php echo htmlspecialchars($erro); ?></p><?php endif; ?>
     <form method="post" action="cadastro.php">
-        <label for="nome">Nome de usuário:</label><br>
-        <input type="text" name="nome" id="nome" required><br><br>
-        <label for="email">Seu email:</label><br>
-        <input type="email" name="email" id="email" required><br><br>
-        <label for="senha">Crie uma senha:</label><br>
-        <input type="password" name="senha" id="senha" required><br><br>
+        <label>Nome de usuário:</label><br><input type="text" name="nome" required><br><br>
+        <label>Seu email:</label><br><input type="email" name="email" required><br><br>
+        <label>Crie uma senha:</label><br><input type="password" name="senha" required><br><br>
         <input type="submit" value="Cadastrar" class="botao">
     </form>
-
-    <div class="google-login">
-        <p>ou cadastre-se com:</p>
-        <a href="#" class="botao-google">🌐 Criar conta com Google</a>
-    </div>
-
-    <p>Já tem conta? <a href="login.php" class="botao-conta">Entre nela</a></p>
 </div>
-    <footer>
+<footer>
         <div class="footer-redes">
             <a href="https://instagram.com/almamistica_ficticio" target="_blank" class="icone-social" title="Instagram Alma Mística">
                 <img src="img/icon instagram.jpg" alt="Instagram" class="icon-externo">
@@ -66,7 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <p>Desenvolvido por Lucas Alexandre e Maria de Lourdes - 2025</p>
             <p style="font-size:13px;">Este site é uma prática de programação e não tem fins comerciais, apenas divulgação de estudos sérios sobre religião e espiritualidade.</p>
         </div>
-    </footer>
-
+    </footer>  
 </body>
 </html>

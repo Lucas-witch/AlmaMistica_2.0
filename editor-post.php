@@ -1,4 +1,19 @@
 <?php
+session_start();
+require_once 'conexao.php'; // Adiciona a conexão com o banco de dados
+
+// Bloqueia acesso se não for admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    http_response_code(403);
+    exit('Acesso negado');
+}
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    http_response_code(403);
+    exit('Acesso negado');
+}
+// restante do código...
+
 // editor-post.php (modificado para usar auth.php)
 require_once 'auth.php'; // garante sessão e funções de role-check
 // exige que usuário seja admin ou editor para acessar o editor

@@ -70,7 +70,7 @@ header h1 {
     background-color: #f496d5;
     box-shadow: #d21fffa1;
     border-radius: 10px;
-    padding: 3px;
+    padding: 5px;
     width: 200px;
     color: black;
 }
@@ -89,8 +89,10 @@ r
 
 .botao-pesquisa {
     box-shadow: #6fa5f6 2px 0px 2px 0px;
-    border-radius: 100%;
+    border-radius: 50%;
     background-color: #b2f4e5;
+    padding: 3px;
+    width: 31px;
 }
 
 /* Estilo do caderno de visitas */
@@ -307,13 +309,14 @@ footer {
     border: 2px solid #794CA9;
     border-radius: 10px;
     box-shadow: 0 0 8px #ff00dd44;
-    padding: 10px 12px;
+    padding: 20px 30px;
     margin-top: 18px;
     font-family: 'VT323', monospace;
     color: #794CA9;
     max-width: 320px;
     margin-left: auto;
     margin-right: auto;
+    font-size: 20px;
 }
 
 .quadro-batepapo-lateral h3 {
@@ -342,76 +345,32 @@ footer {
     box-shadow: 0 0 2px #ff00dd33;
 }
 
-.comentario-nome-lateral {
+/* Estilo para os comentários - nome menor, data menor, mensagem maior */
+.comentario-nome {
     color: #ff00dd;
     font-family: 'Press Start 2P', monospace;
-    font-size: 14px;
+    font-size: 9px; /* menor */
+    display: inline-block;
+    margin-right: 6px;
+    
 }
 
-.comentario-data-lateral {
+.comentario-data {
     color: #755ECE;
-    font-size: 12px;
+    font-size: 12px; /* menor */
     font-family: 'Minecraft', monospace;
+    opacity: 0.9;
+    
 }
 
-.comentario-msg-lateral {
+.comentario-msg {
     color: #794CA9;
-    font-size: 15px;
+    font-size: 20px; /* maior para a mensagem */
     font-family: 'VT323', monospace;
+    display: block;
+    margin-top: 4px;
 }
 
-.comentario-vazio-lateral {
-    color: #794CA9;
-    font-family: 'VT323', monospace;
-    text-align: center;
-    margin: 6px 0;
-}
-
-.comentario-form-lateral {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 6px;
-}
-
-.comentario-input-lateral {
-    padding: 5px;
-    border: 2px solid #794CA9;
-    border-radius: 5px;
-    font-family: 'VT323', monospace;
-    background: #b2f4e5;
-    font-size: 14px;
-}
-
-.comentario-textarea-lateral {
-    padding: 5px;
-    border: 2px solid #ff00dd;
-    border-radius: 5px;
-    font-family: 'VT323', monospace;
-    background: #f1b0fe22;
-    font-size: 14px;
-    min-height: 30px;
-    resize: vertical;
-}
-
-.botao-comentario-lateral {
-    background-color: #794CA9;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 7px 0;
-    font-size: 15px;
-    font-family: 'Press Start 2P', monospace;
-    cursor: pointer;
-    transition: background 0.3s;
-    width: 100%;
-    margin-top: 2px;
-}
-
-.botao-comentario-lateral:hover {
-    background-color: #ff00dd;
-    color: #fff;
-}
 
 .logo-circular {
     width: 70px;

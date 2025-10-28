@@ -1,6 +1,16 @@
 <?php
-/* ÍNDICE: 1-Início 2-Conexão/Session 3-Lógica Principal 4-Formulários/Ações 5-Rodapé */
-session_start();
+// index.php - versão atualizada (CSRF, botões editar/excluir, compatibilidade auth)
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Gera token CSRF por sessão (se ainda não existir)
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(24));
+}
+
+// tenta incluir auth.php se existir (para has_role())
+if (file_exists(__DIR__ . '/auth.php')) {
+    require_once __DIR__ . '/auth.php';
+}
 
 // Lista de temas fixos
 $temas = ['Vida pessoal', 'Bruxaria', 'Livros e poesias', 'Assuntos aleatórios'];
@@ -52,22 +62,33 @@ if ($result && $result->num_rows > 0) {
         $posts[] = $row;
     }
 }
+
+// Função utilitária: formata data para exibição
+function formatarData($d) {
+    if (empty($d) || $d === '0000-00-00 00:00:00') return '';
+    $ts = strtotime($d);
+    return ($ts === false) ? $d : date("d-m-Y H:i", $ts);
+}
+
+// Função para resolver avatar (usa FotoPerfil se existir, senão fallback)
+function resolverAvatar($candidate) {
+    $fallback = 'img/perfil_padrao.png';
+    if (empty($candidate)) return $fallback;
+    $candidate = trim($candidate);
+    if (preg_match('#^https?://#i', $candidate)) return $candidate;
+    if (file_exists(__DIR__ . '/' . $candidate)) return $candidate;
+    if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($candidate, '/'))) return $candidate;
+    return $fallback;
+}
 ?>
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Alma Mística</title>
     <link rel="stylesheet" href="estilo.css">
-    <!-- favicon padrão -->
     <link rel="icon" href="img/logo-nova.png" type="image/png">
-
-    <!-- ícone para iPhone/iPad -->
     <link rel="apple-touch-icon" href="img/logo-nova.png">
-
-    <!-- ícone para Android/Chrome -->
     <link rel="shortcut icon" href="img/logo-nova.png" type="image/png">
 </head>
 <body>
@@ -83,25 +104,16 @@ if ($result && $result->num_rows > 0) {
             <div class="nav-logo-box">
                 <div>
                     <form method="get" action="index.php" class="form-pesquisa">
-                        <input type="text" name="busca" placeholder="Pesquisar post..." class="input-pesquisa">
-                         <button type="submit" class="botao-pesquisa"><img width="15" height="15" class="pesquisar" src="https://img.icons8.com/android/24/search.png" alt="search"/><link></button>
+                        <input type="text" name="busca" placeholder="Pesquisar post..." class="input-pesquisa" value="<?php echo htmlspecialchars($busca, ENT_QUOTES); ?>">
+                        <button type="submit" class="botao-pesquisa"><img width="15" height="15" class="pesquisar" src="https://img.icons8.com/android/24/search.png" alt="search"/></button>
                     </form>
                     <br>
-                    <?php
-                    if (isset($_SESSION['usuario'])): ?>
+                    <?php if (isset($_SESSION['usuario'])): ?>
                     <div class="quadro" style="margin-bottom:18px;">
                         <h2>Configurações</h2>
                         <ul>
-                            <li>
-                                <a href="perfil.php" style="font-family:'Minecraft',monospace;font-size:16px;">
-                                    Perfil
-                                </a>
-                            </li>
-                            <li>
-                                <a href="sobre.html" style="font-family:'Minecraft',monospace;font-size:16px;">
-                                    Sobre a página
-                                </a>
-                            </li>
+                            <li><a href="perfil.php" style="font-family:'Minecraft',monospace;font-size:16px;">Perfil</a></li>
+                            <li><a href="sobre.html" style="font-family:'Minecraft',monospace;font-size:16px;">Sobre a página</a></li>
                         </ul>
                     </div>
                     <?php endif; ?>
@@ -110,9 +122,8 @@ if ($result && $result->num_rows > 0) {
                         <ul>
                             <?php foreach ($temas as $tema): ?>
                                 <li>
-                                    <a href="index.php?tema=<?php echo urlencode($tema); ?>"
-                                       <?php if ($tema_selecionado === $tema): ?>style="font-weight:bold;color:#ffd700;"<?php endif; ?>>
-                                        <?php echo $tema; ?>
+                                    <a href="index.php?tema=<?php echo urlencode($tema); ?>" <?php if ($tema_selecionado === $tema): ?>style="font-weight:bold;color:#ffd700;"<?php endif; ?>>
+                                        <?php echo htmlspecialchars($tema); ?>
                                     </a>
                                 </li>
                             <?php endforeach; ?>
@@ -120,37 +131,7 @@ if ($result && $result->num_rows > 0) {
                     </div>
                 </div>
             </div>
-            <?php if (!isset($_SESSION['usuario'])): ?>
-            <div class="quadro-batepapo-lateral">
-                <h3>Bate-papo Místico</h3>
-                <div style="text-align:right; font-size:14px; color:#794CA9; margin-bottom:6px;">
-                    <?php echo $usuarios_online; ?> pessoas online
-                </div>
-                <div class="comentarios-lista-lateral">
-                    <?php
-                    // Busca os 5 comentários mais recentes do banco
-                    $sql = "SELECT nome, mensagem, data FROM comentarios ORDER BY data DESC LIMIT 5";
-                    $result = $conn->query($sql);
-                    if ($result && $result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo '<div class="comentario-item-lateral">';
-                            echo '<img src="img/icon_perfil.png" alt="Foto de perfil" class="icon-externo" style="width:28px;height:28px;margin-right:6px;vertical-align:middle;">';
-                            echo '<span class="comentario-nome-lateral">' . htmlspecialchars($row['nome']) . '</span> <span class="comentario-data-lateral">(' . $row['data'] . ')</span><br>';
-                            echo '<span class="comentario-msg-lateral">' . nl2br(htmlspecialchars($row['mensagem'])) . '</span>';
-                            echo '</div>';
-                        }
-                    } else {
-                        echo '<p class="comentario-vazio-lateral">Seja o primeiro a comentar!</p>';
-                    }
-                    ?>
-                    
-                </div>
-                <form class="comentario-form-lateral" method="post" action="comentario.php">
-                    <textarea name="mensagem" placeholder="Mensagem..." maxlength="100" required class="comentario-textarea-lateral"></textarea>
-                    <input type="submit" value="Enviar" class="botao-comentario-lateral">
-                </form>
-            </div>
-            <?php endif; ?>
+            <!-- fim esquerda -->
         </div>
 
         <!-- Coluna Central -->
@@ -164,10 +145,35 @@ if ($result && $result->num_rows > 0) {
                     ?>
                 </h2>
                 <?php
-                $isAdmin = (
-                    (isset($_SESSION['usuario']) && $_SESSION['usuario'] === 'eu-sou-gay589') ||
-                    (isset($_SESSION['email'])   && $_SESSION['email']   === 'leo2008@gmail.com')
-                );
+                // define $isAdmin / $isEditor de forma robusta (usa has_role() se disponível)
+                $isAdmin = false;
+                $isEditor = false;
+                if (function_exists('has_role')) {
+                    $isAdmin = has_role(['admin']);
+                    $isEditor = has_role(['editor', 'admin']);
+                } else {
+                    // fallback: se não houver role na sessão, e houver id do usuário, buscar no banco
+                    if (isset($_SESSION['id']) && is_numeric($_SESSION['id'])) {
+                        $uid = (int) $_SESSION['id'];
+                        $q = $conn->prepare("SELECT role, nivel FROM usuarios WHERE id = ? LIMIT 1");
+                        if ($q) {
+                            $q->bind_param("i", $uid);
+                            $q->execute();
+                            $q->bind_result($role_from_db, $nivel_db);
+                            if ($q->fetch()) {
+                                if ($role_from_db === 'admin' || (is_numeric($nivel_db) && intval($nivel_db) >= 10)) $isAdmin = true;
+                                if ($role_from_db === 'editor' || $role_from_db === 'admin' || (is_numeric($nivel_db) && intval($nivel_db) >= 5)) $isEditor = true;
+                            }
+                            $q->close();
+                        }
+                    } else {
+                        // fallback direto por sessão role
+                        if (isset($_SESSION['role'])) {
+                            if ($_SESSION['role'] === 'admin') $isAdmin = true;
+                            if (in_array($_SESSION['role'], ['editor','admin'], true)) $isEditor = true;
+                        }
+                    }
+                }
 
                 if ($isAdmin) {
                     echo '<a href="editor-post.php" class="botao" style="margin-bottom:15px;display:inline-block;">Nova Postagem</a>';
@@ -175,31 +181,29 @@ if ($result && $result->num_rows > 0) {
                 ?>
                 <?php foreach ($posts as $post): ?>
                     <div class="post">
-                        <h3>
-                            <a href="post.php?id=<?php echo $post['id']; ?>">
-                                <?php echo !empty($post['titulo']) ? htmlspecialchars($post['titulo']) : '<span style="color:red;">(Sem título)</span>'; ?>
-                            </a>
-                        </h3>
+                        <h3><a href="post.php?id=<?php echo (int)$post['id']; ?>"><?php echo !empty($post['titulo']) ? htmlspecialchars($post['titulo']) : '<span style="color:red;">(Sem título)</span>'; ?></a></h3>
                         <p>
                             Data: <?php echo date('d/m/Y', strtotime($post['data'])); ?> |
                             Autor: <?php echo !empty($post['autor']) ? htmlspecialchars($post['autor']) : '<span style="color:red;">(Sem autor)</span>'; ?> |
-                            Tema: 
+                            Tema:
                             <?php if (!empty($post['tema'])): ?>
-                                <a href="index.php?tema=<?php echo urlencode($post['tema']); ?>" style="color:#ffd700;text-decoration:underline;">
-                                    <?php echo htmlspecialchars($post['tema']); ?>
-                                </a>
+                                <a href="index.php?tema=<?php echo urlencode($post['tema']); ?>" style="color:#ffd700;text-decoration:underline;"><?php echo htmlspecialchars($post['tema']); ?></a>
                             <?php else: ?>
                                 <span style="color:red;">(Sem tema)</span>
                             <?php endif; ?>
                         </p>
+
                         <?php
-                        // Botão de excluir para admin
-                        if (isset($_SESSION['usuario']) && isset($_SESSION['email']) &&
-                            $_SESSION['usuario'] === 'eu-sou-gay589' &&
-                            $_SESSION['email'] === 'leo2008@gmail.com') {
-                            echo '<form method="post" action="excluir_post.php" style="display:inline;">';
-                            echo '<input type="hidden" name="id" value="' . $post['id'] . '">';
-                            echo '<button type="submit" class="botao" style="background:#d00;color:#fff;margin-left:8px;">Excluir</button>';
+                        // Controles (Editar / Excluir) — Editar: editor/admin; Excluir: apenas admin
+                        if ($isEditor) {
+                            echo '<a class="btn btn-edit" href="editar_post.php?id=' . urlencode($post['id']) . '" style="display:inline-block;margin-right:6px;padding:6px 10px;background:#7c5cff;color:#fff;border-radius:6px;text-decoration:none;">Editar</a>';
+                        }
+
+                        if ($isAdmin) {
+                            echo '<form method="post" action="excluir_post.php" style="display:inline;margin-left:6px;" onsubmit="return confirm(\'Tem certeza que deseja excluir esta postagem?\');">';
+                            echo '<input type="hidden" name="id" value="' . htmlspecialchars($post['id'], ENT_QUOTES) . '">';
+                            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES) . '">';
+                            echo '<button type="submit" class="botao" style="background:#d00;color:#fff;margin-left:8px;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">Excluir</button>';
                             echo '</form>';
                         }
                         ?>
@@ -214,59 +218,74 @@ if ($result && $result->num_rows > 0) {
         <!-- Coluna Direita -->
         <div>
             <?php if (!isset($_SESSION['usuario'])): ?>
-            <div class="caderno-visitas">
-                <img src="img/download.png" alt="livrinho">
-                <h3>Livro da Besta</h3>
-                <p>Entre ou crie sua conta para acessar conteúdos mágicos! Torne-se uma alma mística também!</p>
-                <div style="margin-bottom:10px; color:#794CA9; font-size:16px;">
-                    <?php echo $total_cadastros; ?> pessoas já assinaram o seu nome, assine você também.
+                <!-- caderno-visitas (quando não logado) -->
+                <div class="caderno-visitas">
+                    <img src="img/download.png" alt="livrinho">
+                    <h3>Livro da Besta</h3>
+                    <p>Entre ou crie sua conta para acessar conteúdos mágicos! Torne-se uma alma mística também!</p>
+                    <div style="margin-bottom:10px; color:#794CA9; font-size:16px;">
+                        <?php echo $total_cadastros; ?> pessoas já assinaram o seu nome, assine você também.
+                    </div>
+                    <div class="container-login-cadastro">
+                        <a href="login.php"><input type="submit" value="Login" class="botao-login"></a> <br><br>
+                        <a href="cadastro.php"><input type="submit" value="Cadastro" class="botao-cadastro"></a> <br><br>
+                    </div>
                 </div>
-                <div class="container-login-cadastro">
-                    <a href="login.php">
-                        <input type="submit" value="Login" class="botao-login">
-                    </a> <br><br>
-                    <a href="cadastro.php">
-                        <input type="submit" value="Cadastro" class="botao-cadastro">
-                    </a> <br><br>
-                </div>
-            </div>
             <?php else: ?>
-            <!-- Bate-papo horizontal ocupando toda a área -->
-            <div class="quadro-batepapo-horizontal" style="background:#e0faff;border:2px solid #794CA9;border-radius:10px;box-shadow:0 0 8px #ff00dd44;padding:18px 18px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
-                <h3 style="color:#794CA9;font-family:'Press Start 2P',monospace;font-size:20px;margin-bottom:12px;text-align:center;">Bate-papo Místico</h3>
-                <div style="width:100%;text-align:right; font-size:15px; color:#794CA9; margin-bottom:8px;">
-                    <?php echo $usuarios_online; ?> pessoas online
+                <!-- Bate-papo horizontal ocupando toda a área -->
+                <div class="quadro-batepapo-horizontal" style="background:#e0faff;border:2px solid #794CA9;border-radius:10px;box-shadow:0 0 8px #ff00dd44;padding:18px 18px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
+                    <h3 style="color:#794CA9;font-family:'Press Start 2P',monospace;font-size:20px;margin-bottom:12px;text-align:center;">Bate-papo Místico</h3>
+                    <div style="width:100%;text-align:right; font-size:15px; color:#794CA9; margin-bottom:8px;">
+                        <?php echo $usuarios_online; ?> pessoas online
+                    </div>
+                    <div class="comentarios-lista-horizontal" style="width:100%;max-height:140px;overflow-y:auto;background:#fff;border-radius:8px;padding:10px;margin-bottom:10px;">
+                        <?php
+                        // Busca os 10 comentários mais recentes do banco com avatar (se usuario_id existir)
+                        $has_usuario_id = false;
+                        $chk = $conn->query("SHOW COLUMNS FROM comentarios LIKE 'usuario_id'");
+                        if ($chk && $chk->num_rows > 0) $has_usuario_id = true;
+
+                        // ... após detectar $has_usuario_id ...
+$limit = 10; // ou o número que preferir
+if ($has_usuario_id) {
+    $sql = "SELECT * FROM (
+                SELECT c.id, c.mensagem, c.data, c.usuario_id, COALESCE(u.nome, c.nome) AS nome, u.FotoPerfil
+                FROM comentarios c
+                LEFT JOIN usuarios u ON c.usuario_id = u.id
+                ORDER BY c.data DESC
+                LIMIT ?
+            ) AS sub
+            ORDER BY sub.data ASC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $sql = "SELECT * FROM (
+                SELECT id, nome, mensagem, data
+                FROM comentarios
+                ORDER BY data DESC
+                LIMIT ?
+            ) AS sub
+            ORDER BY sub.data ASC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+}
+
+                        ?>
+                    </div>
+
+                    <form class="comentario-form-horizontal" method="post" action="comentario.php" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:7px;">
+                        <textarea name="mensagem" placeholder="Mensagem..." maxlength="250" required style="width:80%;margin:0 auto;padding:6px;border:2px solid #ff00dd;border-radius:5px;font-family:'VT323',monospace;background:#f1b0fe22;font-size:14px;min-height:28px;resize:vertical;display:block;text-align:center;"></textarea>
+                        <input type="submit" value="Enviar" style="background-color:#794CA9;color:#fff;border:none;border-radius:5px;padding:5px 18px;font-size:13px;font-family:'Press Start 2P',monospace;cursor:pointer;transition:background 0.3s;display:block;margin:0 auto;">
+                    </form>
                 </div>
-                <div class="comentarios-lista-horizontal" style="width:100%;max-height:140px;overflow-y:auto;background:#fff;border-radius:8px;padding:10px;margin-bottom:10px;">
-                    <?php
-                    // Busca os 10 comentários mais recentes do banco
-                    $sql = "SELECT nome, mensagem, data FROM comentarios ORDER BY data DESC LIMIT 10";
-                    $result = $conn->query($sql);
-                    if ($result && $result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo '<div style="display:flex;align-items:center;margin-bottom:8px;padding:6px 0;border-bottom:1px dashed #b2f4e5;">';
-                            echo '<img src="img/icon_perfil.png" alt="Foto de perfil" style="width:32px;height:32px;margin-right:10px;border-radius:50%;box-shadow:0 0 4px #ff00dd99;">';
-                            echo '<div>';
-                            echo '<span style="color:#ff00dd;font-family:\'Press Start 2P\',monospace;font-size:15px;">' . htmlspecialchars($row['nome']) . '</span> ';
-                            echo '<span style="color:#755ECE;font-size:13px;font-family:\'Minecraft\',monospace;">(' . $row['data'] . ')</span><br>';
-                            echo '<span style="color:#794CA9;font-size:15px;font-family:\'VT323\',monospace;">' . nl2br(htmlspecialchars($row['mensagem'])) . '</span>';
-                            echo '</div>';
-                            echo '</div>';
-                        }
-                    } else {
-                        echo '<p style="color:#794CA9;font-family:\'VT323\',monospace;text-align:center;margin:6px 0;">Seja o primeiro a comentar!</p>';
-                    }
-                    ?>
-                </div>
-                <form class="comentario-form-horizontal" method="post" action="comentario.php" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:7px;">
-                    <textarea name="mensagem" placeholder="Mensagem..." maxlength="100" required style="width:80%;margin:0 auto;padding:6px;border:2px solid #ff00dd;border-radius:5px;font-family:'VT323',monospace;background:#f1b0fe22;font-size:14px;min-height:28px;resize:vertical;display:block;text-align:center;"></textarea>
-                    <input type="submit" value="Enviar" style="background-color:#794CA9;color:#fff;border:none;border-radius:5px;padding:5px 18px;font-size:13px;font-family:'Press Start 2P',monospace;cursor:pointer;transition:background 0.3s;display:block;margin:0 auto;">
+
+                <form method="post" action="logout.php" style="width:100%;margin-top:8px;text-align:center;">
+                    <button type="submit" style="background:none;border:none;color:#ff00dd;font-size:13px;font-family:'Press Start 2P',monospace;cursor:pointer;">Logout</button>
                 </form>
-            </div>
-            <!-- Botão de logout menor, fora da caixa do bate-papo -->
-            <form method="post" action="logout.php" style="width:100%;margin-top:8px;text-align:center;">
-                <button type="submit" style="background:none;border:none;color:#ff00dd;font-size:13px;font-family:'Press Start 2P',monospace;cursor:pointer;">Logout</button>
-            </form>
             <?php endif; ?>
         </div>
     </div>

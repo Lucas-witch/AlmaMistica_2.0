@@ -27,7 +27,7 @@ body {
 }
 
 .post-container {
-    background: rgb(241, 210, 245);
+    background: rgba(255, 255, 255, 0.961);
     padding: 15px;
     margin-bottom: 20px;
     border: 2px solid #794CA9; /* royal-purple */
@@ -90,7 +90,7 @@ body {
 
 .botao-voltar {
     display: inline-block;
-    background: #ff00dd;
+    background-color: #ff00dd;
     color: aliceblue;
     list-style: none;
     padding: 10px;
@@ -106,21 +106,51 @@ body {
 }
 
 .botao-voltar:hover {
-    background: #794CA9;
+    background-color: #794CA9;
     color: #fff;
 }
 
 footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #210034; /* ou a cor do seu tema */
-    color: #fff;
     text-align: center;
-    padding: 12px 0;
-    font-family: 'VT323', monospace;
-    font-size: 14px;
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
-    z-index: 1000;
+    padding: 10px;
+    background: rgba(0,0,0,0.8);
+    border-top: 2px solid #9861D4; /* amethyst */
+    margin-top: 20px;
+    font-family: 'VT323', monospace; /* Fonte pixelada para o rodapé */
+}
+
+/* Bate-papo lateral menor */
+.footer-redes, .redes-sociais {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+.icone-social svg {
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    transition: transform 0.2s;
+}
+
+.icone-social:hover svg {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
+}
+.icon-externo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    object-fit: cover;
+    transition: transform 0.2s;
+    display: block;
+}
+
+.icone-social:hover .icon-externo {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px #ff00ddcc;
 }
