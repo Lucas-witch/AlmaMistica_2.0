@@ -1,38 +1,44 @@
 <?php
 session_start();
-require_once 'conexao.php'; // Adiciona a conexão com o banco de dados
+require_once 'conexao.php';
+require_once 'auth.php';
 
-// Bloqueia acesso se não for admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    exit('Acesso negado');
-}
-
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    exit('Acesso negado');
-}
-// restante do código...
-
-// editor-post.php (modificado para usar auth.php)
-require_once 'auth.php'; // garante sessão e funções de role-check
-// exige que usuário seja admin ou editor para acessar o editor
+// Remove bloco duplicado e usa has_role() do auth.php  
 if (!has_role(['admin', 'editor'])) {
     http_response_code(403);
     echo '<div style="color:red;text-align:center;">Acesso negado. Você precisa ser administrador ou editor.</div>';
     exit;
 }
 
-// resto do código do editor continua...
-// (a partir daqui, mantenha o seu código existente que renderiza o editor)
+// Obter nome do autor da sessão com mais opções de fallback
+$autor = $_SESSION['usuario'] ?? $_SESSION['username'] ?? $_SESSION['nome'] ?? null;
+if (empty($autor)) {
+    // Se ainda não tiver autor, busca do banco
+    $uid = $_SESSION['id'] ?? $_SESSION['user_id'] ?? null;
+    if ($uid) {
+        $stmt = $conn->prepare("SELECT nome FROM usuarios WHERE id = ? LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param('i', $uid);
+            $stmt->execute();
+            $stmt->bind_result($nome_db);
+            if ($stmt->fetch()) {
+                $autor = $nome_db;
+            }
+            $stmt->close();
+        }
+    }
+}
+if (empty($autor)) $autor = 'Anônimo';
 
-
- //Carrega posts para o modal de inserir link interno
+//Carrega posts para o modal de inserir link interno
 $posts_for_links = [];
 $sql = "SELECT id, titulo FROM posts ORDER BY data DESC LIMIT 200";
 if ($res = $conn->query($sql)) {
     while ($row = $res->fetch_assoc()) $posts_for_links[] = $row;
 }
+
+// Substituir a consulta de temas do banco por lista fixa
+$temas = ['Vida pessoal', 'Bruxaria', 'Livros e poesias', 'Assuntos aleatórios'];
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -80,16 +86,15 @@ if ($res = $conn->query($sql)) {
 
                 <div class="col">
                     <label for="tema">Tema</label>
-                    <select id="tema" name="tema">
+                    <select id="tema" name="tema" required>
                         <option value="">-- Selecionar tema --</option>
-                        <option value="Vida pessoal">Vida pessoal</option>
-                        <option value="Bruxaria">Bruxaria</option>
-                        <option value="Livros e poesias">Livros e poesias</option>
-                        <option value="Assuntos aleatórios">Assuntos aleatórios</option>
+                        <?php foreach ($temas as $t): ?>
+                            <option value="<?= htmlspecialchars($t) ?>"><?= htmlspecialchars($t) ?></option>
+                        <?php endforeach; ?>
                     </select>
 
                     <label for="autor">Autor</label>
-                    <input id="autor" name="autor" type="text" value="<?= htmlspecialchars($_SESSION['usuario'] ?? 'Anônimo') ?>">
+                    <input type="text" id="autor" name="autor" value="<?= htmlspecialchars($autor) ?>" readonly> <!-- Adicionado readonly para preservar autor -->
 
                     <div class="seletor-titulo">
                         <label for="meta-cor">Cor tema/autor</label>
@@ -207,6 +212,12 @@ if ($res = $conn->query($sql)) {
             <!-- 5 - hidden fields -->
             <input type="hidden" name="conteudo" id="conteudo-hidden">
             <input type="hidden" name="estilo_post" id="estilo_post">
+            <input type="hidden" name="titulo_cor" id="titulo-cor-hidden">
+            <input type="hidden" name="titulo_font" id="titulo-font-hidden">
+            <input type="hidden" name="titulo_size" id="titulo-size-hidden">
+            <input type="hidden" name="meta_cor" id="meta-cor-hidden">
+            <input type="hidden" name="meta_font" id="meta-font-hidden">
+            <input type="hidden" name="meta_size" id="meta-size-hidden">
             <br><br><br>
             <div class="form-submit" style="margin-top:14px;">
                 <button type="submit" class="botao-publicar">Publicar</button>

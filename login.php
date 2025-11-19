@@ -1,6 +1,12 @@
 <?php
 session_start();
-require_once 'conexao.php'; // $conn (mysqli)
+require_once __DIR__ . '/conexao.php';
+
+// Se usuário já está logado, redireciona para index
+if (isset($_SESSION['usuario']) && !empty($_SESSION['usuario'])) {
+    header('Location: index.php');
+    exit;
+}
 
 $erro = '';
 
@@ -37,7 +43,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST["nome"]) && !empty($_
                     $_SESSION['username'] = $nome_db;
                     $_SESSION['email'] = $email_db;
                     $_SESSION['foto'] = $foto_db ?: 'img/icon_perfil.png';
-                    $_SESSION['role'] = $role_db ?? 'user';
+                    // Normaliza role: trim, lowercase e fallback para 'user' se vazio
+                    $role_normalized = isset($role_db) ? trim((string)$role_db) : '';
+                    $role_normalized = ($role_normalized !== '') ? strtolower($role_normalized) : 'user';
+                    $_SESSION['role'] = $role_normalized;
 
                     header("Location: perfil.php");
                     exit;
@@ -52,14 +61,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST["nome"]) && !empty($_
     }
 }
 ?>
-<!-- resto do HTML idêntico ao seu (mantive o original) -->
 <!DOCTYPE html>
 <html lang="pt-br">
-<head><meta charset="utf-8"><title>Login</title><link rel="stylesheet" href="login-cadastro.css"></head>
+<head>
+    <meta charset="utf-8"><title>Login</title><link rel="stylesheet" href="login-cadastro.css">
+</head>
 <body>
 <div class="form-container">
     <h2>Entrar na sua conta</h2>
     <?php if (!empty($erro)): ?><p style="color:red;text-align:center;"><?php echo htmlspecialchars($erro); ?></p><?php endif; ?>
+    
+    <!-- Formulário de login -->
     <form method="post" action="login.php">
         <label for="nome">Usuário:</label><br>
         <input type="text" name="nome" id="nome" required><br><br>
@@ -67,10 +79,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST["nome"]) && !empty($_
         <input type="password" name="senha" id="senha" required><br><br>
         <input type="submit" value="Entrar" class="botao">
     </form>
-    <p>Não tem conta? <a href="cadastro.php">Cadastre-se</a></p>
+
+    <!-- Link para cadastro (movido para cima do botão Google) -->
+    <p style="text-align:center;margin-top:12px;margin-bottom:10px;">Não tem conta? <a href="cadastro.php" style="color:#ff00dd;font-weight:bold;">Cadastre-se</a></p>
+
+    
+
 </div>
+
 <footer>
-    <div class="footer-redes">
+        <div class="footer-redes">
             <a href="https://instagram.com/almamistica_ficticio" target="_blank" class="icone-social" title="Instagram Alma Mística">
                 <img src="img/icon instagram.jpg" alt="Instagram" class="icon-externo">
             </a>
@@ -85,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST["nome"]) && !empty($_
         <div style="text-align:center; margin-top:8px; font-family: 'VT323', monospace; color: #fff;">
             <p>Desenvolvido por Lucas Alexandre e Maria de Lourdes - 2025</p>
             <p style="font-size:13px;">Este site é uma prática de programação e não tem fins comerciais, apenas divulgação de estudos sérios sobre religião e espiritualidade.</p>
-        </div> 
-</footer>
+        </div>
+    </footer>  
 </body>
 </html>

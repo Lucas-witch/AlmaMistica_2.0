@@ -315,12 +315,13 @@ document.addEventListener('click', (e) => {
     // content
     previewConteudo.innerHTML = editor.innerHTML;
 
-    // gera CSS a ser salvo
+    // gera CSS a ser salvo (mantém cores originais)
     const css = `
 .post-title { color: ${titleColor.value}; font-family: ${titleFont.value}; font-size: ${titleSize.value}; margin-bottom:8px; }
 .post-meta { color: ${metaColor.value}; font-family: ${metaFont.value}; font-size: ${metaSize.value}; opacity:.9; }
 .post-conteudo { font-family: ${fontFamily.value}; font-size: ${fontSize.value}; line-height:1.6; color: inherit; }
-.post-conteudo mark { background: #fff59d; padding: 2px 4px; border-radius:2px; }
+.post-conteudo mark { background-color: #ff94f3; color: #000; padding: 2px 4px; }
+.post-conteudo a { color: #ff00dd; text-decoration: underline; }
 `;
     previewStyle.textContent = css;
     estiloPostInput.value = css;
@@ -338,11 +339,26 @@ document.addEventListener('click', (e) => {
   metaFont.addEventListener('change', atualizarPreview);
   metaSize.addEventListener('change', atualizarPreview);
 
-  // submit: popula campos hidden
+  // Atualiza campos hidden antes do submit
   form.addEventListener('submit', (e) => {
-    if (!titleInput.value.trim()) { alert('Informe um título.'); e.preventDefault(); return false; }
+    if (!titleInput.value.trim()) { 
+      alert('Informe um título.'); 
+      e.preventDefault(); 
+      return false; 
+    }
+
+    // Conteúdo e estilo já são atualizados pelo preview
     conteudoHidden.value = editor.innerHTML;
-    atualizarPreview();
+
+    // Atualiza campos de estilo
+    document.getElementById('titulo-cor-hidden').value = titleColor.value;
+    document.getElementById('titulo-font-hidden').value = titleFont.value;
+    document.getElementById('titulo-size-hidden').value = titleSize.value;
+    document.getElementById('meta-cor-hidden').value = metaColor.value;
+    document.getElementById('meta-font-hidden').value = metaFont.value;
+    document.getElementById('meta-size-hidden').value = metaSize.value;
+    document.getElementById('font-family-hidden').value = fontFamily.value; // Adicionado
+    document.getElementById('font-size-hidden').value = fontSize.value; // Adicionado
   });
 
   // inicial

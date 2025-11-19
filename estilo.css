@@ -74,7 +74,7 @@ header h1 {
     width: 200px;
     color: black;
 }
-r
+
 .input-pesquisa:hover {
     transition: 0.8s;
     background-color: #92e8fbd3;
@@ -343,29 +343,28 @@ footer {
     border-radius: 5px;
     font-size: 15px;
     box-shadow: 0 0 2px #ff00dd33;
+    background-color:#eeeeeed6
 }
 
 /* Estilo para os comentários - nome menor, data menor, mensagem maior */
 .comentario-nome {
     color: #ff00dd;
     font-family: 'Press Start 2P', monospace;
-    font-size: 9px; /* menor */
+    font-size: 10px; /* nome menor */
     display: inline-block;
     margin-right: 6px;
-    
 }
 
 .comentario-data {
     color: #755ECE;
-    font-size: 12px; /* menor */
+    font-size: 10px; /* data menor */
     font-family: 'Minecraft', monospace;
     opacity: 0.9;
-    
 }
 
 .comentario-msg {
     color: #794CA9;
-    font-size: 20px; /* maior para a mensagem */
+    font-size: 24px; /* mensagem maior que nome/data */
     font-family: 'VT323', monospace;
     display: block;
     margin-top: 4px;

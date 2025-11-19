@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 body {
-    background-image: url('img/fundo.jpeg');
+    background-image: url('img/fundo-login.jpeg');
     background-size: cover;
     color: #fff;
     font-family: 'VT323', monospace;

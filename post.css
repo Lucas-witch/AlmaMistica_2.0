@@ -5,16 +5,15 @@
 
 body {
     background: image(url(img/fundo-login.jpeg));
-    color: #fff;
+    color: black;
     font-family: 'VT323', monospace;
     padding: 40px;
     
 }
 
-#title {
+#title, .post-title {
     font-size: 20px;
-    font-family: 'Press Start 2P', monospace;
-    color: #ff6afc;
+    font-family: inherit;
 }
 
 .post {
@@ -102,7 +101,7 @@ body {
     box-shadow: 0 0 8px #ff00dd66;
     transition: background 0.3s;
     width: 150px;
-    font-size: 12px;
+    font-size: 8px;
 }
 
 .botao-voltar:hover {
@@ -117,6 +116,7 @@ footer {
     border-top: 2px solid #9861D4; /* amethyst */
     margin-top: 20px;
     font-family: 'VT323', monospace; /* Fonte pixelada para o rodapé */
+    color: aliceblue;
 }
 
 /* Bate-papo lateral menor */

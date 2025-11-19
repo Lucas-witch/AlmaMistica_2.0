@@ -1,43 +1,62 @@
 <?php
-// post.php (modificado: usa has_role para identificar admin/editor)
-require_once 'conexao.php';
-require_once 'auth.php';
+// post.php — exibe o post, lista comentários (com nome/foto) e mostra o formulário para novo comentário
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/conexao.php'; // $conn = mysqli
 
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache");
-header("Expires: 0");
-
-// Captura o ID do post pela URL
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if ($id <= 0) {
-    die("Post inválido.");
+// Utilitários
+function goHome(string $code = 'post_invalido'): void {
+    header('Location: index.php?erro=' . rawurlencode($code));
+    exit;
 }
 
-// busca o post no banco
-$stmt = $conn->prepare("SELECT id, titulo, conteudo, autor, tema, data, imagem_url, estilo_post FROM posts WHERE id = ? LIMIT 1");
-$stmt->bind_param("i", $id);
+// 1) Captura do ID (GET) com fallback para POST (quando volta do comentário)
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($id <= 0 && isset($_POST['post_id'])) {
+    $id = (int)$_POST['post_id'];
+}
+if ($id <= 0) {
+    goHome('post_invalido');
+}
+
+// 2) Carrega o post (colunas reais do seu schema)
+$sqlPost = "SELECT id, titulo, conteudo, tema, autor, data, imagem_url, estilo_post
+            FROM posts WHERE id = ? LIMIT 1";
+$stmt = $conn->prepare($sqlPost);
+if (!$stmt) { goHome('db_prepare'); }
+$stmt->bind_param('i', $id);
 $stmt->execute();
 $res = $stmt->get_result();
 $post = $res->fetch_assoc();
+$stmt->close();
+
 if (!$post) {
-    die("Post não encontrado.");
+    goHome('post_nao_encontrado');
 }
 
-// Identificação do administrador/ediTOR pela sessão (mais confiável)
-$isAdmin = has_role(['admin']);
-$isEditor = has_role(['editor', 'admin']); // editores também podem editar
+// 3) Mensagens de feedback
+$erro = $_GET['erro'] ?? null;
+$ok   = $_GET['comentario'] ?? null;
 
+// 4) Comentários: JOIN com usuarios p/ trazer nome e FotoPerfil
+$sqlCom = "SELECT
+             c.id,
+             c.mensagem,
+             c.data AS created_at,
+             u.nome AS autor_nome,
+             COALESCE(u.FotoPerfil, 'img/icon_perfil.png') AS autor_foto
+           FROM comentarios c
+           JOIN usuarios u ON u.id = c.usuario_id
+           WHERE c.post_id = ?
+           ORDER BY c.data DESC";
+$stmtCom = $conn->prepare($sqlCom);
+$stmtCom->bind_param('i', $id);
+$stmtCom->execute();
+$comentarios = $stmtCom->get_result();
+$stmtCom->close();
+
+// 5) Usuário logado?
+$usuario_id_logado = $_SESSION['usuario_id'] ?? $_SESSION['user_id'] ?? null;
 ?>
-<!-- A partir daqui continua seu HTML de exibição do post.
-Use as flags $isAdmin / $isEditor para exibir botões de edição/exclusão:
-<?php if ($isEditor): ?>
-  <!-- botão editar -->
-<?php endif; ?>
-<?php if ($isAdmin): ?>
-  <!-- botão excluir -->
-<?php endif; ?>
--->
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -69,23 +88,24 @@ Use as flags $isAdmin / $isEditor para exibir botões de edição/exclusão:
 </head>
     <body>
     <div class="post">
-    <div class="post-container">
-        <h1 id="title"><?= htmlspecialchars($post['titulo']) ?></h1>
+        <div class="post-container">
+            <!-- Mudar de id="title" para class="post-title" para usar o estilo dinâmico -->
+            <h1 class="post-title"><?= htmlspecialchars($post['titulo']) ?></h1>
 
-        <div class="post-meta">
-            <strong>Tema:</strong> <?= htmlspecialchars($post['tema']) ?> |
-            <strong>Autor:</strong> <?= htmlspecialchars($post['autor']) ?> |
-            <strong>Data:</strong> <?= date('d/m/Y H:i', strtotime($post['data'])) ?>
+            <div class="post-meta">
+                <strong>Tema:</strong> <?= htmlspecialchars($post['tema']) ?> |
+                <strong>Autor:</strong> <?= htmlspecialchars($post['autor']) ?> |
+                <strong>Data:</strong> <?= date('d/m/Y H:i', strtotime($post['data'])) ?>
+            </div>
+
+            <!-- Usar a classe correta para o conteúdo -->
+            <div class="post-conteudo">
+                <?= $post['conteudo'] ?>
+            </div>
+            <br>
+            <a href="index.php" class="botao-voltar">Voltar ao site</a>    
         </div>
-
-        <div class="conteudo-post ck-content">
-            <?= $post['conteudo'] /* Mantém a formatação HTML salva pelo editor */ ?>
-            <br>
-            <br>
-            <a href="index.php" class="botao-voltar">Voltar</a>
-        </div>    
     </div>
-</div>
        
 
     <footer>
@@ -105,3 +125,4 @@ Use as flags $isAdmin / $isEditor para exibir botões de edição/exclusão:
     </footer>
 </body>
 </html>
+

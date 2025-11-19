@@ -35,25 +35,31 @@ $usuarios_online = ($result_online && $result_online->num_rows > 0) ? $result_on
 
 // --- POSTS ---
 $posts = [];
+$limit = 3; // exibir 3 posts por página/inicialmente
+$offset = 0;
 
 // Caso 1: Se há uma busca, ignora o filtro de tema e mostra resultados da pesquisa
 if ($busca !== '') {
-    $stmt = $conn->prepare("SELECT id, titulo, autor, tema, data FROM posts WHERE titulo LIKE ? OR conteudo LIKE ? OR tema LIKE ? ORDER BY data DESC");
+    $stmt = $conn->prepare("SELECT id, titulo, autor, tema, data FROM posts WHERE titulo LIKE ? OR conteudo LIKE ? OR tema LIKE ? ORDER BY data DESC LIMIT ? OFFSET ?");
     $like = "%$busca%";
-    $stmt->bind_param("sss", $like, $like, $like);
+    $stmt->bind_param("sssii", $like, $like, $like, $limit, $offset);
     $stmt->execute();
     $result = $stmt->get_result();
 
 // Caso 2: Se há um tema selecionado, filtra pelo tema
 } elseif ($tema_selecionado && in_array($tema_selecionado, $temas)) {
-    $stmt = $conn->prepare("SELECT id, titulo, autor, tema, data FROM posts WHERE tema = ? ORDER BY data DESC LIMIT 5");
-    $stmt->bind_param("s", $tema_selecionado);
+    // retornar apenas $limit iniciais
+    $stmt = $conn->prepare("SELECT id, titulo, autor, tema, data FROM posts WHERE tema = ? ORDER BY data DESC LIMIT ? OFFSET ?");
+    $stmt->bind_param("sii", $tema_selecionado, $limit, $offset);
     $stmt->execute();
     $result = $stmt->get_result();
 
-// Caso 3: Nenhum filtro, mostra últimas postagens
+// Caso 3: Nenhum filtro, mostra últimas postagens (limitadas)
 } else {
-    $result = $conn->query("SELECT id, titulo, autor, tema, data FROM posts ORDER BY data DESC LIMIT 5");
+    $stmt = $conn->prepare("SELECT id, titulo, autor, tema, data FROM posts ORDER BY data DESC LIMIT ? OFFSET ?");
+    $stmt->bind_param("ii", $limit, $offset);
+    $stmt->execute();
+    $result = $stmt->get_result();
 }
 
 // Guarda os resultados no array $posts
@@ -80,6 +86,56 @@ function resolverAvatar($candidate) {
     if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($candidate, '/'))) return $candidate;
     return $fallback;
 }
+
+// --- ADICIONADO: alias/local wrapper para evitar função indefinida no template...
+function resolverAvatarLocal($candidate) {
+    return resolverAvatar($candidate ?? '');
+}
+
+// --- ADICIONADO: detectar se coluna usuario_id existe na tabela comentarios ---
+$has_usuario_id = false;
+$chk_col = $conn->query("SHOW COLUMNS FROM comentarios LIKE 'usuario_id'");
+if ($chk_col && $chk_col->num_rows > 0) $has_usuario_id = true;
+
+// --- ADICIONADO: busca comentários do "bate-papo" (apenas post_id IS NULL) ---
+$comentarios_chat = [];
+$limit = 10;
+
+if ($has_usuario_id) {
+    $sql = "SELECT c.id, c.mensagem, c.data, c.usuario_id, COALESCE(u.nome, c.nome) AS nome, u.FotoPerfil
+            FROM comentarios c
+            LEFT JOIN usuarios u ON c.usuario_id = u.id
+            WHERE c.post_id IS NULL
+            ORDER BY c.data DESC  /* Modificado: DESC em vez de ASC */
+            LIMIT ?";
+    $stmt_c = $conn->prepare($sql);
+    if ($stmt_c) {
+        $stmt_c->bind_param("i", $limit);
+        if ($stmt_c->execute()) {
+            $res = $stmt_c->get_result();
+            while ($r = $res->fetch_assoc()) $comentarios_chat[] = $r;
+        }
+        $stmt_c->close();
+    }
+} else {
+    $sql = "SELECT id, nome, mensagem, data 
+            FROM comentarios
+            WHERE post_id IS NULL
+            ORDER BY data DESC  /* Modificado: removido subquery e ORDER BY ASC */
+            LIMIT ?";
+    $stmt_c = $conn->prepare($sql);
+    if ($stmt_c) {
+        $stmt_c->bind_param("i", $limit);
+        if ($stmt_c->execute()) {
+            $res = $stmt_c->get_result();
+            while ($r = $res->fetch_assoc()) $comentarios_chat[] = $r;
+        }
+        $stmt_c->close();
+    }
+}
+
+// Remover o array_reverse - não é mais necessário pois o ORDER BY DESC já traz na ordem correta
+//$comentarios_chat = array_reverse($comentarios_chat);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -179,6 +235,9 @@ function resolverAvatar($candidate) {
                     echo '<a href="editor-post.php" class="botao" style="margin-bottom:15px;display:inline-block;">Nova Postagem</a>';
                 }
                 ?>
+
+                <!-- container para posts (inicialmente com $posts carregados) -->
+                <div id="posts-container">
                 <?php foreach ($posts as $post): ?>
                     <div class="post">
                         <h3><a href="post.php?id=<?php echo (int)$post['id']; ?>"><?php echo !empty($post['titulo']) ? htmlspecialchars($post['titulo']) : '<span style="color:red;">(Sem título)</span>'; ?></a></h3>
@@ -196,7 +255,7 @@ function resolverAvatar($candidate) {
                         <?php
                         // Controles (Editar / Excluir) — Editar: editor/admin; Excluir: apenas admin
                         if ($isEditor) {
-                            echo '<a class="btn btn-edit" href="editar_post.php?id=' . urlencode($post['id']) . '" style="display:inline-block;margin-right:6px;padding:6px 10px;background:#7c5cff;color:#fff;border-radius:6px;text-decoration:none;">Editar</a>';
+                            echo '<a class="btn btn-edit" href="editar-conteudo-post.php?id=' . urlencode($post['id']) . '" style="display:inline-block;margin-right:6px;padding:6px 10px;background:#7c5cff;color:#fff;border-radius:6px;text-decoration:none;">Editar</a>';
                         }
 
                         if ($isAdmin) {
@@ -209,8 +268,16 @@ function resolverAvatar($candidate) {
                         ?>
                     </div>
                 <?php endforeach; ?>
+                </div> <!-- /#posts-container -->
+
+                <!-- Loader / sentinel para infinite scroll -->
+                <div id="load-sentinel" style="text-align:center;padding:12px;color:#fff;">
+                    <button id="load-more-btn" style="display:none;background:#ff00dd;border:none;color:#fff;padding:8px 12px;border-radius:6px;cursor:pointer;">Carregar mais</button>
+                    <div id="loading-indicator" style="display:none;color:#fff;">Carregando...</div>
+                </div>
+
                 <?php if (empty($posts)): ?>
-                    <p style="color:#fff;">Nenhuma postagem encontrada</p>
+                    <p id="no-posts-msg" style="color:#fff;">Nenhuma postagem encontrada</p>
                 <?php endif; ?>
             </div>
         </div>
@@ -240,44 +307,28 @@ function resolverAvatar($candidate) {
                     </div>
                     <div class="comentarios-lista-horizontal" style="width:100%;max-height:140px;overflow-y:auto;background:#fff;border-radius:8px;padding:10px;margin-bottom:10px;">
                         <?php
-                        // Busca os 10 comentários mais recentes do banco com avatar (se usuario_id existir)
-                        $has_usuario_id = false;
-                        $chk = $conn->query("SHOW COLUMNS FROM comentarios LIKE 'usuario_id'");
-                        if ($chk && $chk->num_rows > 0) $has_usuario_id = true;
-
-                        // ... após detectar $has_usuario_id ...
-$limit = 10; // ou o número que preferir
-if ($has_usuario_id) {
-    $sql = "SELECT * FROM (
-                SELECT c.id, c.mensagem, c.data, c.usuario_id, COALESCE(u.nome, c.nome) AS nome, u.FotoPerfil
-                FROM comentarios c
-                LEFT JOIN usuarios u ON c.usuario_id = u.id
-                ORDER BY c.data DESC
-                LIMIT ?
-            ) AS sub
-            ORDER BY sub.data ASC";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $limit);
-    $stmt->execute();
-    $result = $stmt->get_result();
-} else {
-    $sql = "SELECT * FROM (
-                SELECT id, nome, mensagem, data
-                FROM comentarios
-                ORDER BY data DESC
-                LIMIT ?
-            ) AS sub
-            ORDER BY sub.data ASC";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $limit);
-    $stmt->execute();
-    $result = $stmt->get_result();
-}
-
+                        if (!empty($comentarios_chat)) {
+                            foreach ($comentarios_chat as $c) {
+                                $nomeC = htmlspecialchars($c['nome'] ?? 'Anônimo', ENT_QUOTES, 'UTF-8');
+                                $msgC  = nl2br(htmlspecialchars($c['mensagem'] ?? '', ENT_QUOTES, 'UTF-8'));
+                                $dataC = !empty($c['data']) ? date('d/m H:i', strtotime($c['data'])) : '';
+                                $fotoPerfilRaw = $c['FotoPerfil'] ?? ($c['foto'] ?? '');
+                                $avatar = resolverAvatarLocal($fotoPerfilRaw);
+                                echo '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;background-color:#eeeeeed6;padding:5px;border-radius:8px;">';
+                                echo '<img src="' . htmlspecialchars($avatar, ENT_QUOTES) . '" alt="avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">';
+                                echo '<div style="flex:1;">';
+                                echo '<div><span class="comentario-nome">' . $nomeC . '</span> <span class="comentario-data">' . $dataC . '</span></div>';
+                                echo '<div class="comentario-msg" style="margin-top:6px;">' . $msgC . '</div>';
+                                echo '</div></div>';
+                            }
+                        } else {
+                            echo '<div style="color:#666;text-align:center;padding:6px;">Nenhuma mensagem ainda.</div>';
+                        }
                         ?>
                     </div>
 
                     <form class="comentario-form-horizontal" method="post" action="comentario.php" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:7px;">
+                        <input type="hidden" name="post_id" value="0">
                         <textarea name="mensagem" placeholder="Mensagem..." maxlength="250" required style="width:80%;margin:0 auto;padding:6px;border:2px solid #ff00dd;border-radius:5px;font-family:'VT323',monospace;background:#f1b0fe22;font-size:14px;min-height:28px;resize:vertical;display:block;text-align:center;"></textarea>
                         <input type="submit" value="Enviar" style="background-color:#794CA9;color:#fff;border:none;border-radius:5px;padding:5px 18px;font-size:13px;font-family:'Press Start 2P',monospace;cursor:pointer;transition:background 0.3s;display:block;margin:0 auto;">
                     </form>
@@ -306,4 +357,69 @@ if ($has_usuario_id) {
     </footer>
 </body>
 </html>
+
+<script>
+(function(){
+    const limit = <?php echo (int)$limit; ?>;
+    let offset = <?php echo count($posts); ?>;
+    const tema = <?php echo json_encode($tema_selecionado); ?>;
+    const busca = <?php echo json_encode($busca); ?>;
+    const sentinel = document.getElementById('load-sentinel');
+    const postsContainer = document.getElementById('posts-container');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    let loading = false;
+    async function loadMore() {
+        if (loading) return;
+        loading = true;
+        loadingIndicator.style.display = '';
+        try {
+            const params = new URLSearchParams({ offset: offset, limit: limit });
+            if (tema) params.set('tema', tema);
+            if (busca) params.set('busca', busca);
+            const res = await fetch('fetch_posts.php?' + params.toString(), { credentials: 'same-origin' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const html = await res.text();
+            if (!html || html.trim() === '') {
+                // sem mais posts, remove observer / botão
+                observer.disconnect();
+                loadMoreBtn.style.display = 'none';
+                loadingIndicator.style.display = 'none';
+                loading = false;
+                return;
+            }
+            // append html
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            // append children
+            while (temp.firstChild) postsContainer.appendChild(temp.firstChild);
+            // atualiza offset
+            offset += limit;
+            loadingIndicator.style.display = 'none';
+            loading = false;
+        } catch (err) {
+            console.error('Erro fetch posts:', err);
+            loadingIndicator.style.display = 'none';
+            loadMoreBtn.style.display = '';
+            loading = false;
+        }
+    }
+
+    // botão fallback
+    loadMoreBtn.addEventListener('click', loadMore);
+
+    // IntersectionObserver para auto-load
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                loadMore();
+            }
+        });
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
+})();
+</script>
+
 <?php $conn->close(); ?>

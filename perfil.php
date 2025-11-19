@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'conexao.php'; // garante que $conn (mysqli) esteja disponível
+require_once __DIR__ . '/conexao.php'; // garante que $conn (mysqli) esteja disponível
 
 // Verifica login
 if (empty($_SESSION['usuario'])) {
@@ -12,7 +12,12 @@ $usuario_session = $_SESSION['usuario'];
 
 // Busca dados do usuário
 $stmt = $conn->prepare("SELECT id, nome, email, senha, FotoPerfil, role FROM usuarios WHERE nome = ? LIMIT 1");
-$stmt->bind_param("s", $usuario_session);
+if ($stmt) {
+    $stmt->bind_param("s", $usuario_session);
+} else {
+    echo '<p style="text-align:center;color:red;">Erro interno: falha ao preparar consulta de usuário.</p>';
+    exit;
+}
 $stmt->execute();
 $stmt->store_result();
 
@@ -26,13 +31,34 @@ $stmt->bind_result($user_id, $nome_db, $email_db, $senha_hash_db, $foto_db, $rol
 $stmt->fetch();
 $stmt->close();
 
-// Define foto (caminho)
-$foto_path = 'img/icon_perfil.png';
-if (!empty($foto_db) && (file_exists($foto_db) || file_exists(__DIR__ . '/' . $foto_db))) {
-    $foto_path = $foto_db;
-} elseif (!empty($_SESSION['foto'])) {
-    $foto_path = $_SESSION['foto'];
+// Define foto (caminho) - substituído por função mais robusta
+function resolve_avatar_path($path) {
+    $default = 'img/icon_perfil.png';
+    if (empty($path)) return $default;
+    $p = trim($path);
+
+    // se for URL absoluta, usa como está
+    if (preg_match('#^https?://#i', $p)) return $p;
+
+    // caminhos relativos ao __DIR__
+    if (file_exists(__DIR__ . '/' . $p)) return $p;
+
+    // caminhos relativos ao cwd
+    if (file_exists($p)) return $p;
+
+    // tenta document root (caso o path esteja armazenado sem o prefixo)
+    if (!empty($_SERVER['DOCUMENT_ROOT'])) {
+        $try = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . ltrim($p, '/');
+        if (file_exists($try)) {
+            // retorna caminho relativo ao script (mantemos o mesmo formato armazenado)
+            return $p;
+        }
+    }
+
+    return $default;
 }
+
+$foto_path = resolve_avatar_path($foto_db ?: ($_SESSION['foto'] ?? ''));
 
 // Máscara da senha
 $senha_mask = str_repeat('•', 8);

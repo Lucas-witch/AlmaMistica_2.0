@@ -76,6 +76,37 @@ h2 {
     text-align: center;
 }
 
+/* Estilo do botão Google */
+.botao-google {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: #794CA9;
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    transition: background 0.3s ease;
+    justify-content: center;
+}
+
+.botao-google:hover {
+    background: #5a3580;
+}
+
+.google-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff00dd99;
+    background: #fff;
+    object-fit: cover;
+    padding: 2px;
+    box-sizing: border-box;
+}
+
 .botao-esquecer {
     margin-bottom: 12px;
     color: #ff94d6; /* amethyst */
